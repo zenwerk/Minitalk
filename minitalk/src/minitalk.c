@@ -3,16 +3,13 @@
  * MINITALK.C	main program
  */
 
-
 #include "minitalk.h"
 
-
-#include <unistd.h>		/* to get prototype for access() */
+#include <unistd.h> /* to get prototype for access() */
 
 #ifdef DOS_STANDARD
-#include <alloc.h>	/* to get prototypes for coreleft(), farcoreleft() */
+#include <alloc.h> /* to get prototypes for coreleft(), farcoreleft() */
 #endif
-
 
 void error(char *msg)
 {
@@ -20,13 +17,11 @@ void error(char *msg)
   exit(2);
 }
 
-
 void usage(void)
 {
   printf("\nUsage: minitalk [-dm] [-di] [-ds] [-dp] [-dt] [file]\n");
   exit(1);
 }
-
 
 void copyFile(char *destName, char *progPath, char *extension)
 {
@@ -36,10 +31,12 @@ void copyFile(char *destName, char *progPath, char *extension)
   strcpy(copyCommand, "cp ");
   strcat(copyCommand, progPath);
   cp = copyCommand;
-  while (*cp != '\0') {
+  while (*cp != '\0')
+  {
     cp++;
   }
-  while (*cp != '/') {
+  while (*cp != '/')
+  {
     cp--;
   }
   *++cp = '\0';
@@ -48,11 +45,11 @@ void copyFile(char *destName, char *progPath, char *extension)
   strcat(copyCommand, extension);
   strcat(copyCommand, " ");
   strcat(copyCommand, destName);
-  if (system(copyCommand) != 0) {
+  if (system(copyCommand) != 0)
+  {
     error("cannot copy original image file");
   }
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -68,54 +65,72 @@ int main(int argc, char *argv[])
 
   /* analyze command line arguments */
   fileName = NULL;
-  for (i = 1; i < argc; i++) {
+  for (i = 1; i < argc; i++)
+  {
     argp = argv[i];
-    if (*argp == '-') {
+    if (*argp == '-')
+    {
       /* option */
       argp++;
-      if (strcmp(argp, "dm") == 0) {
-	debugMemory = TRUE;
-      } else
-      if (strcmp(argp, "di") == 0) {
-	debugInterpreter = TRUE;
-      } else
-      if (strcmp(argp, "ds") == 0) {
-	debugScanner = TRUE;
-      } else
-      if (strcmp(argp, "dp") == 0) {
-	debugParser = TRUE;
-      } else
-      if (strcmp(argp, "dt") == 0) {
-	debugTree = TRUE;
-      } else {
-	usage();
+      if (strcmp(argp, "dm") == 0)
+      {
+        debugMemory = TRUE;
       }
-    } else {
+      else if (strcmp(argp, "di") == 0)
+      {
+        debugInterpreter = TRUE;
+      }
+      else if (strcmp(argp, "ds") == 0)
+      {
+        debugScanner = TRUE;
+      }
+      else if (strcmp(argp, "dp") == 0)
+      {
+        debugParser = TRUE;
+      }
+      else if (strcmp(argp, "dt") == 0)
+      {
+        debugTree = TRUE;
+      }
+      else
+      {
+        usage();
+      }
+    }
+    else
+    {
       /* file */
-      if (fileName == NULL) {
-	fileName = argp;
-      } else {
-	usage();
+      if (fileName == NULL)
+      {
+        fileName = argp;
+      }
+      else
+      {
+        usage();
       }
     }
   }
   /* set image and sources file names */
-  if (fileName == NULL) {
+  if (fileName == NULL)
+  {
     strcpy(imageFileName, DEFAULT_NAME);
     strcpy(sourcesFileName, DEFAULT_NAME);
-  } else {
+  }
+  else
+  {
     strcpy(imageFileName, fileName);
     strcpy(sourcesFileName, fileName);
   }
-  if (strchr(imageFileName, '.') == NULL) {
+  if (strchr(imageFileName, '.') == NULL)
+  {
     strcat(imageFileName, ".");
     strcat(imageFileName, DEFAULT_IMAGE_EXT);
     strcat(sourcesFileName, ".");
     strcat(sourcesFileName, DEFAULT_SOURCE_EXT);
   }
   /* ensure access to image and sources files */
-  if (access(imageFileName, 0) != 0 ||
-      access(sourcesFileName, 0) != 0) {
+  if (access(imageFileName, 0) != 0 || access(sourcesFileName, 0) != 0)
+  {
     /* image or sources file not present, must copy originals */
     copyFile(imageFileName, argv[0], DEFAULT_IMAGE_EXT);
     copyFile(sourcesFileName, argv[0], DEFAULT_SOURCE_EXT);
@@ -125,19 +140,21 @@ int main(int argc, char *argv[])
   /* load image file and run bytecode interpreter */
 #ifdef DOS_STANDARD
   nearCoreBefore = coreleft();
-  farCoreBefore = farcoreleft();
+  farCoreBefore  = farcoreleft();
 #endif
   initMemory(imageFileName);
   runInterpreter();
   exitMemory(imageFileName);
 #ifdef DOS_STANDARD
   nearCoreAfter = coreleft();
-  farCoreAfter = farcoreleft();
-  if (nearCoreBefore != nearCoreAfter) {
+  farCoreAfter  = farcoreleft();
+  if (nearCoreBefore != nearCoreAfter)
+  {
     printf("near core: %lu vs. %lu", nearCoreBefore, nearCoreAfter);
     error("memory leakage");
   }
-  if (farCoreBefore != farCoreAfter) {
+  if (farCoreBefore != farCoreAfter)
+  {
     printf("far core: %lu vs. %lu", farCoreBefore, farCoreAfter);
     error("memory leakage");
   }

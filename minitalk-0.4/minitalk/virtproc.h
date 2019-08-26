@@ -2,10 +2,8 @@
  * virtproc.h -- virtual processor
  */
 
-
 #ifndef _VIRTPROC_H_
 #define _VIRTPROC_H_
-
 
 extern Bool debugProcessor;
 extern Bool run;
@@ -23,6 +21,5 @@ void fetchContextRegisters(void);
 void findMethod(ObjPtr initialClass, ObjPtr selector);
 void executeNewMethod(int numArgs);
 void runProcessor(void);
-
 
 #endif /* _VIRTPROC_H_ */

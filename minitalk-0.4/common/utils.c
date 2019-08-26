@@ -2,17 +2,16 @@
  * utils.c -- utility functions
  */
 
-
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 
 #include "common.h"
 #include "utils.h"
 
-
-void error(char *fmt, ...) {
+void error(char *fmt, ...)
+{
   va_list ap;
 
   va_start(ap, fmt);
@@ -23,20 +22,22 @@ void error(char *fmt, ...) {
   exit(1);
 }
 
-
-void *allocate(unsigned size) {
+void *allocate(unsigned size)
+{
   void *p;
 
   p = malloc(size);
-  if (p == NULL) {
+  if (p == NULL)
+  {
     error("out of memory");
   }
   return p;
 }
 
-
-void release(void *p) {
-  if (p == NULL) {
+void release(void *p)
+{
+  if (p == NULL)
+  {
     error("NULL pointer detected in release");
   }
   free(p);

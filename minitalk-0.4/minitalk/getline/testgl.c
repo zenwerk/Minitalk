@@ -2,16 +2,17 @@
 #include "getline.h"
 
 main()
-/* 
+/*
  * just echo user input lines, letting user edit them and move through
  * history list
  */
 {
-    char *p;
+  char *p;
 
-    do {
-	p = gl_getline("PROMPT>>>> ");
-	gl_histadd(p);
-	fputs(p, stdout);
-    } while (*p != 0);
+  do
+  {
+    p = gl_getline("PROMPT>>>> ");
+    gl_histadd(p);
+    fputs(p, stdout);
+  } while (*p != 0);
 }

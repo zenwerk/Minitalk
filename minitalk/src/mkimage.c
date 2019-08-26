@@ -3,59 +3,44 @@
  * MKIMAGE.C	image file creator for MiniTalk
  */
 
-
 #include "minitalk.h"
 
-
 #ifdef DOS_STANDARD
-#include <alloc.h>	/* to get prototypes for coreleft(), farcoreleft() */
+#include <alloc.h> /* to get prototypes for coreleft(), farcoreleft() */
 #endif
-
 
 /*------------------------------------*/
 /* Object Generation And Access       */
 /*------------------------------------*/
-
 
 ObjPtr newArray(Ulong size)
 {
   ObjPtr array;
 
   array =
-    allocateObject(getPointer(machine.Array, VALUE_IN_ASSOCIATION),
-		   size,
-		   TRUE);
+    allocateObject(getPointer(machine.Array, VALUE_IN_ASSOCIATION), size, TRUE);
   return array;
 }
-
 
 ObjPtr newByteArray(Uchar *bytes, Ulong size)
 {
   ObjPtr byteArray;
 
-  byteArray =
-    allocateObject(getPointer(machine.ByteArray, VALUE_IN_ASSOCIATION),
-		   size,
-		   FALSE);
+  byteArray = allocateObject(
+    getPointer(machine.ByteArray, VALUE_IN_ASSOCIATION), size, FALSE);
   memcpy(getBytes(byteArray), bytes, size);
   return byteArray;
 }
 
-
-ObjPtr newCompiledMethod(ObjPtr selector,
-			 ObjPtr primitive,
-			 ObjPtr numberargs,
-			 ObjPtr tempsize,
-			 ObjPtr stacksize,
-			 ObjPtr bytecodes,
-			 ObjPtr literals)
+ObjPtr newCompiledMethod(ObjPtr selector, ObjPtr primitive, ObjPtr numberargs,
+                         ObjPtr tempsize, ObjPtr stacksize, ObjPtr bytecodes,
+                         ObjPtr literals)
 {
   ObjPtr compiledMethod;
 
   compiledMethod =
     allocateObject(getPointer(machine.CompiledMethod, VALUE_IN_ASSOCIATION),
-		   SIZE_OF_COMPILEDMETHOD,
-		   TRUE);
+                   SIZE_OF_COMPILEDMETHOD, TRUE);
   setPointer(compiledMethod, SELECTOR_IN_COMPILEDMETHOD, selector);
   setPointer(compiledMethod, PRIMITIVE_IN_COMPILEDMETHOD, primitive);
   setPointer(compiledMethod, NUMBERARGS_IN_COMPILEDMETHOD, numberargs);
@@ -66,22 +51,15 @@ ObjPtr newCompiledMethod(ObjPtr selector,
   return compiledMethod;
 }
 
-
-ObjPtr newMethodContext(ObjPtr sender,
-			ObjPtr instptr,
-			ObjPtr stackptr,
-			ObjPtr stack,
-			ObjPtr clazz,
-			ObjPtr method,
-			ObjPtr receiver,
-			ObjPtr temporaries)
+ObjPtr newMethodContext(ObjPtr sender, ObjPtr instptr, ObjPtr stackptr,
+                        ObjPtr stack, ObjPtr clazz, ObjPtr method,
+                        ObjPtr receiver, ObjPtr temporaries)
 {
   ObjPtr context;
 
   context =
     allocateObject(getPointer(machine.MethodContext, VALUE_IN_ASSOCIATION),
-		   SIZE_OF_METHODCONTEXT,
-		   TRUE);
+                   SIZE_OF_METHODCONTEXT, TRUE);
   setPointer(context, SENDER_IN_METHODCONTEXT, sender);
   setPointer(context, INSTPTR_IN_METHODCONTEXT, instptr);
   setPointer(context, STACKPTR_IN_METHODCONTEXT, stackptr);
@@ -93,47 +71,38 @@ ObjPtr newMethodContext(ObjPtr sender,
   return context;
 }
 
-
 ObjPtr newDictionary(void)
 {
   ObjPtr dictionary;
 
   dictionary =
     allocateObject(getPointer(machine.Dictionary, VALUE_IN_ASSOCIATION),
-		   SIZE_OF_DICTIONARY,
-		   TRUE);
+                   SIZE_OF_DICTIONARY, TRUE);
   return dictionary;
 }
-
 
 /*------------------------------------*/
 /* Standard Classes                   */
 /*------------------------------------*/
 
-
-#define LINESIZE		80
-
+#define LINESIZE 80
 
 Boolean isLowerCaseVowel(char c)
 {
-  return c == 'a' ||
-	 c == 'e' ||
-	 c == 'i' ||
-	 c == 'o' ||
-	 c == 'u';
+  return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u';
 }
-
 
 void strlwr(char *str)
 {
-  while (*str != '\0') {
-    if (*str >= 'A' && *str <= 'Z') {
+  while (*str != '\0')
+  {
+    if (*str >= 'A' && *str <= 'Z')
+    {
       *str += 'a' - 'A';
     }
     str++;
   }
 }
-
 
 char *makeFilenameFromClassname(char *className)
 {
@@ -144,23 +113,26 @@ char *makeFilenameFromClassname(char *className)
   strcpy(fileName, className);
   length = strlen(fileName);
   revPtr = fileName + length - 1;
-  while (length > 8) {
-    if (isLowerCaseVowel(*revPtr)) {
+  while (length > 8)
+  {
+    if (isLowerCaseVowel(*revPtr))
+    {
       strcpy(revPtr, revPtr + 1);
       length--;
     }
-    if (revPtr == fileName) {
+    if (revPtr == fileName)
+    {
       break;
     }
     revPtr--;
   }
-  if (length > 8) {
+  if (length > 8)
+  {
     fileName[8] = '\0';
   }
   strlwr(fileName);
   return fileName;
 }
-
 
 void forEachStdClassDo(void function(char *fileName))
 {
@@ -174,21 +146,26 @@ void forEachStdClassDo(void function(char *fileName))
   strcpy(specFileName, STDCLASSES_DIRECTORY);
   strcat(specFileName, STDCLASSES_SPECFILE);
   stdClassesFile = fopen(specFileName, "rt");
-  if (stdClassesFile == NULL) {
+  if (stdClassesFile == NULL)
+  {
     error("cannot open file with names of standard classes");
   }
   /* work on file line by line */
-  while (fgets(line, LINESIZE, stdClassesFile) != NULL) {
+  while (fgets(line, LINESIZE, stdClassesFile) != NULL)
+  {
     /* separate class name */
     cp = line;
-    while (*cp == ' ' || *cp == '\t') {
+    while (*cp == ' ' || *cp == '\t')
+    {
       cp++;
     }
-    if (*cp == '#' || *cp == '\n') {
+    if (*cp == '#' || *cp == '\n')
+    {
       continue;
     }
     className = cp;
-    while (*cp != ' ' && *cp != '\t' && *cp != '#' && *cp != '\n') {
+    while (*cp != ' ' && *cp != '\t' && *cp != '#' && *cp != '\n')
+    {
       cp++;
     }
     *cp = '\0';
@@ -204,11 +181,9 @@ void forEachStdClassDo(void function(char *fileName))
   fclose(stdClassesFile);
 }
 
-
 /*------------------------------------*/
 /* Error Handling                     */
 /*------------------------------------*/
-
 
 void error(char *msg)
 {
@@ -216,11 +191,9 @@ void error(char *msg)
   exit(2);
 }
 
-
 /*------------------------------------*/
 /* Image File Creation                */
 /*------------------------------------*/
-
 
 void createImageFile(char *fileName)
 {
@@ -228,29 +201,28 @@ void createImageFile(char *fileName)
 
   /* try to create image file */
   imageFile = fopen(fileName, "wb");
-  if (imageFile == NULL) {
+  if (imageFile == NULL)
+  {
     error("cannot create image file");
   }
   /* write initial machine state */
-  machine.memoryStart = sizeof(Machine);
-  machine.memorySize = 0;
+  machine.memoryStart  = sizeof(Machine);
+  machine.memorySize   = 0;
   machine.majorVersion = MAJOR_VNUM;
   machine.minorVersion = MINOR_VNUM;
-  if (fwrite(&machine, sizeof(Machine), 1, imageFile) != 1) {
+  if (fwrite(&machine, sizeof(Machine), 1, imageFile) != 1)
+  {
     error("cannot write initial machine state");
   }
   /* close image file */
   fclose(imageFile);
 }
 
-
 /*------------------------------------*/
 /* How A Programmer Creates The World */
 /*------------------------------------*/
 
-
-#define THE_SYMBOLS		"TheSymbols"
-
+#define THE_SYMBOLS "TheSymbols"
 
 void bigBangPart1(void)
 {
@@ -259,12 +231,13 @@ void bigBangPart1(void)
   ObjPtr symbols;
 
   /* create nil: this will allow to work alloacteObject() correctly */
-  machine.nil = allocateObject((ObjPtr) 0, 0, FALSE);
+  machine.nil = allocateObject((ObjPtr)0, 0, FALSE);
   /* now false and true can be created */
   machine.false = allocateObject(machine.nil, 0, FALSE);
-  machine.true = allocateObject(machine.nil, 0, FALSE);
+  machine.true  = allocateObject(machine.nil, 0, FALSE);
   /* then, the characters */
-  for (i = 0; i < 256; i++) {
+  for (i = 0; i < 256; i++)
+  {
     machine.character[i] = allocateObject(machine.nil, 1, FALSE);
     setByte(machine.character[i], 0, i);
   }
@@ -278,7 +251,6 @@ void bigBangPart1(void)
   setPointer(machine.TheSymbols, VALUE_IN_ASSOCIATION, symbols);
 }
 
-
 void bigBangPart2(void)
 {
   int i;
@@ -286,34 +258,34 @@ void bigBangPart2(void)
   ObjPtr symbol;
 
   /* patch classes of objects created in part 1 */
-  * (ObjPtr *) (memory + machine.nil) =
+  *(ObjPtr *)(memory + machine.nil) =
     getPointer(machine.UndefinedObject, VALUE_IN_ASSOCIATION);
-  * (ObjPtr *) (memory + machine.false) =
+  *(ObjPtr *)(memory + machine.false) =
     getPointer(machine.False, VALUE_IN_ASSOCIATION);
-  * (ObjPtr *) (memory + machine.true) =
+  *(ObjPtr *)(memory + machine.true) =
     getPointer(machine.True, VALUE_IN_ASSOCIATION);
-  for (i = 0; i < 256; i++) {
-    * (ObjPtr *) (memory + machine.character[i]) =
+  for (i = 0; i < 256; i++)
+  {
+    *(ObjPtr *)(memory + machine.character[i]) =
       getPointer(machine.Character, VALUE_IN_ASSOCIATION);
   }
-  * (ObjPtr *) (memory + machine.TheSymbols) =
+  *(ObjPtr *)(memory + machine.TheSymbols) =
     getPointer(machine.Association, VALUE_IN_ASSOCIATION);
   symbols = getPointer(machine.TheSymbols, VALUE_IN_ASSOCIATION);
-  while (symbols != machine.nil) {
-    * (ObjPtr *) (memory + symbols) =
+  while (symbols != machine.nil)
+  {
+    *(ObjPtr *)(memory + symbols) =
       getPointer(machine.LinkedObject, VALUE_IN_ASSOCIATION);
     symbol = getPointer(symbols, OBJECT_IN_LINKEDOBJECT);
-    * (ObjPtr *) (memory + symbol) =
+    *(ObjPtr *)(memory + symbol) =
       getPointer(machine.Symbol, VALUE_IN_ASSOCIATION);
     symbols = getPointer(symbols, NEXTLINK_IN_LINKEDOBJECT);
   }
 }
 
-
 /*------------------------------------*/
 /* Chunk Handling                     */
 /*------------------------------------*/
-
 
 char *nextChunk(FILE *sourceFile)
 {
@@ -322,37 +294,42 @@ char *nextChunk(FILE *sourceFile)
   int c;
 
   cp = chunkBuffer;
-  while (1) {
+  while (1)
+  {
     c = getc(sourceFile);
-    if (c == EOF) {
+    if (c == EOF)
+    {
       break;
     }
-    if (c == '!') {
+    if (c == '!')
+    {
       c = getc(sourceFile);
-      if (c != '!') {
-	break;
+      if (c != '!')
+      {
+        break;
       }
     }
     *cp++ = c;
-    if (cp == &chunkBuffer[MAX_CHUNKSIZE]) {
+    if (cp == &chunkBuffer[MAX_CHUNKSIZE])
+    {
       error("source file chunk too big");
     }
   }
   *cp = '\0';
-  while (c == ' ' || c == '\t' || c == '\n') {
+  while (c == ' ' || c == '\t' || c == '\n')
+  {
     c = getc(sourceFile);
   }
-  if (c != EOF) {
+  if (c != EOF)
+  {
     ungetc(c, sourceFile);
   }
   return chunkBuffer;
 }
 
-
 /*------------------------------------*/
 /* Analyze Class Creation Expression  */
 /*------------------------------------*/
-
 
 char **analyzeClassCreationExpression(char *aString)
 {
@@ -364,7 +341,8 @@ char **analyzeClassCreationExpression(char *aString)
   cp = textBuffer;
   nextToken();
   /* superclass name */
-  if (tokenType != T_IDENT) {
+  if (tokenType != T_IDENT)
+  {
     return NULL;
   }
   tokens[0] = cp;
@@ -372,7 +350,8 @@ char **analyzeClassCreationExpression(char *aString)
   cp += strlen(stringBuffer) + 1;
   nextToken();
   /* 'subclass:', 'variableSubclass:', or something like that */
-  if (tokenType != T_KEYWORD) {
+  if (tokenType != T_KEYWORD)
+  {
     return NULL;
   }
   tokens[1] = cp;
@@ -380,12 +359,14 @@ char **analyzeClassCreationExpression(char *aString)
   cp += strlen(stringBuffer) + 1;
   nextToken();
   /* T_HASH */
-  if (tokenType != T_HASH) {
+  if (tokenType != T_HASH)
+  {
     return NULL;
   }
   nextToken();
   /* class name */
-  if (tokenType != T_IDENT) {
+  if (tokenType != T_IDENT)
+  {
     return NULL;
   }
   tokens[2] = cp;
@@ -394,12 +375,14 @@ char **analyzeClassCreationExpression(char *aString)
   nextToken();
   /* 'instanceVariableNames:' */
   if (tokenType != T_KEYWORD ||
-      strcmp(stringBuffer, "instanceVariableNames:") != 0) {
+      strcmp(stringBuffer, "instanceVariableNames:") != 0)
+  {
     return NULL;
   }
   nextToken();
   /* a string */
-  if (tokenType != T_STRING) {
+  if (tokenType != T_STRING)
+  {
     return NULL;
   }
   tokens[3] = cp;
@@ -408,12 +391,14 @@ char **analyzeClassCreationExpression(char *aString)
   nextToken();
   /* 'classVariableNames:' */
   if (tokenType != T_KEYWORD ||
-      strcmp(stringBuffer, "classVariableNames:") != 0) {
+      strcmp(stringBuffer, "classVariableNames:") != 0)
+  {
     return NULL;
   }
   nextToken();
   /* a string */
-  if (tokenType != T_STRING) {
+  if (tokenType != T_STRING)
+  {
     return NULL;
   }
   tokens[4] = cp;
@@ -421,13 +406,14 @@ char **analyzeClassCreationExpression(char *aString)
   cp += strlen(stringBuffer) + 1;
   nextToken();
   /* 'poolDictionaries:' */
-  if (tokenType != T_KEYWORD ||
-      strcmp(stringBuffer, "poolDictionaries:") != 0) {
+  if (tokenType != T_KEYWORD || strcmp(stringBuffer, "poolDictionaries:") != 0)
+  {
     return NULL;
   }
   nextToken();
   /* a string */
-  if (tokenType != T_STRING) {
+  if (tokenType != T_STRING)
+  {
     return NULL;
   }
   tokens[5] = cp;
@@ -435,13 +421,14 @@ char **analyzeClassCreationExpression(char *aString)
   cp += strlen(stringBuffer) + 1;
   nextToken();
   /* 'category:' */
-  if (tokenType != T_KEYWORD ||
-      strcmp(stringBuffer, "category:") != 0) {
+  if (tokenType != T_KEYWORD || strcmp(stringBuffer, "category:") != 0)
+  {
     return NULL;
   }
   nextToken();
   /* a string */
-  if (tokenType != T_STRING) {
+  if (tokenType != T_STRING)
+  {
     return NULL;
   }
   tokens[6] = cp;
@@ -449,18 +436,17 @@ char **analyzeClassCreationExpression(char *aString)
   cp += strlen(stringBuffer) + 1;
   nextToken();
   /* T_END */
-  if (tokenType != T_END) {
+  if (tokenType != T_END)
+  {
     return NULL;
   }
   /* return token array */
   return tokens;
 }
 
-
 /*------------------------------------*/
 /* Analyze Category Reader Expression */
 /*------------------------------------*/
-
 
 char **analyzeCategoryReaderExpression(char *aString)
 {
@@ -472,7 +458,8 @@ char **analyzeCategoryReaderExpression(char *aString)
   cp = textBuffer;
   nextToken();
   /* class name */
-  if (tokenType != T_IDENT) {
+  if (tokenType != T_IDENT)
+  {
     return NULL;
   }
   tokens[0] = cp;
@@ -480,23 +467,26 @@ char **analyzeCategoryReaderExpression(char *aString)
   cp += strlen(stringBuffer) + 1;
   nextToken();
   /* 'class' or not 'class' this is here the question... */
-  if (tokenType == T_IDENT &&
-      strcmp(stringBuffer, "class") == 0) {
+  if (tokenType == T_IDENT && strcmp(stringBuffer, "class") == 0)
+  {
     tokens[1] = cp;
     strcpy(cp, stringBuffer);
     cp += strlen(stringBuffer) + 1;
     nextToken();
-  } else {
+  }
+  else
+  {
     tokens[1] = NULL;
   }
   /* 'methodsFor:' */
-  if (tokenType != T_KEYWORD ||
-      strcmp(stringBuffer, "methodsFor:") != 0) {
+  if (tokenType != T_KEYWORD || strcmp(stringBuffer, "methodsFor:") != 0)
+  {
     return NULL;
   }
   nextToken();
   /* a string */
-  if (tokenType != T_STRING) {
+  if (tokenType != T_STRING)
+  {
     return NULL;
   }
   tokens[2] = cp;
@@ -504,52 +494,53 @@ char **analyzeCategoryReaderExpression(char *aString)
   cp += strlen(stringBuffer) + 1;
   nextToken();
   /* T_END */
-  if (tokenType != T_END) {
+  if (tokenType != T_END)
+  {
     return NULL;
   }
   /* return token array */
   return tokens;
 }
 
-
 /*------------------------------------*/
 /* Classes Needed By Interpreter      */
 /*------------------------------------*/
 
-
-struct {
+struct
+{
   char *name;
   ObjPtr *variable;
   Boolean initialized;
 } classesNeededByInterpreter[] = {
-  { "UndefinedObject", &machine.UndefinedObject, FALSE },
-  { "False",           &machine.False,           FALSE },
-  { "True",            &machine.True,            FALSE },
-  { "Character",       &machine.Character,       FALSE },
-  { "SmallInteger",    &machine.SmallInteger,    FALSE },
-  { "Float",           &machine.Float,           FALSE },
-  { "LinkedObject",    &machine.LinkedObject,    FALSE },
-  { "Association",     &machine.Association,     FALSE },
-  { "Dictionary",      &machine.Dictionary,      FALSE },
-  { "Array",           &machine.Array,           FALSE },
-  { "ByteArray",       &machine.ByteArray,       FALSE },
-  { "String",          &machine.String,          FALSE },
-  { "Symbol",          &machine.Symbol,          FALSE },
-  { "CompiledMethod",  &machine.CompiledMethod,  FALSE },
-  { "BlockContext",    &machine.BlockContext,    FALSE },
-  { "MethodContext",   &machine.MethodContext,   FALSE },
-  { "Class",           &machine.Class,           FALSE },
-  { "Metaclass",       &machine.Metaclass,       FALSE }
-};
-
+  {"UndefinedObject", &machine.UndefinedObject, FALSE},
+  {"False", &machine.False, FALSE},
+  {"True", &machine.True, FALSE},
+  {"Character", &machine.Character, FALSE},
+  {"SmallInteger", &machine.SmallInteger, FALSE},
+  {"Float", &machine.Float, FALSE},
+  {"LinkedObject", &machine.LinkedObject, FALSE},
+  {"Association", &machine.Association, FALSE},
+  {"Dictionary", &machine.Dictionary, FALSE},
+  {"Array", &machine.Array, FALSE},
+  {"ByteArray", &machine.ByteArray, FALSE},
+  {"String", &machine.String, FALSE},
+  {"Symbol", &machine.Symbol, FALSE},
+  {"CompiledMethod", &machine.CompiledMethod, FALSE},
+  {"BlockContext", &machine.BlockContext, FALSE},
+  {"MethodContext", &machine.MethodContext, FALSE},
+  {"Class", &machine.Class, FALSE},
+  {"Metaclass", &machine.Metaclass, FALSE}};
 
 ObjPtr *classNeededByInterpreter(char *className)
 {
   int i;
 
   for (i = 0; i < sizeof(classesNeededByInterpreter) /
-		  sizeof(classesNeededByInterpreter[0]); i++) {
-    if (strcmp(classesNeededByInterpreter[i].name, className) == 0) {
+                    sizeof(classesNeededByInterpreter[0]);
+       i++)
+  {
+    if (strcmp(classesNeededByInterpreter[i].name, className) == 0)
+    {
       classesNeededByInterpreter[i].initialized = TRUE;
       return classesNeededByInterpreter[i].variable;
     }
@@ -557,58 +548,57 @@ ObjPtr *classNeededByInterpreter(char *className)
   return NULL;
 }
 
-
 void checkClassesNeededByInterpreter(void)
 {
   int i;
   char errorString[100];
 
   for (i = 0; i < sizeof(classesNeededByInterpreter) /
-		  sizeof(classesNeededByInterpreter[0]); i++) {
-    if (!classesNeededByInterpreter[i].initialized) {
-      sprintf(errorString,
-	      "class %s needed but not created",
-	      classesNeededByInterpreter[i].name);
+                    sizeof(classesNeededByInterpreter[0]);
+       i++)
+  {
+    if (!classesNeededByInterpreter[i].initialized)
+    {
+      sprintf(errorString, "class %s needed but not created",
+              classesNeededByInterpreter[i].name);
       error(errorString);
     }
   }
 }
 
-
 /*------------------------------------*/
 /* Create Classes From Source File    */
 /*------------------------------------*/
 
-
-#define MAX_NUMBER_CLASSES		100
-
+#define MAX_NUMBER_CLASSES 100
 
 int numberClasses = 0;
 
-
-struct classStruct {
+struct classStruct
+{
   char *className;
   ObjPtr classAssociation;
 } classArray[MAX_NUMBER_CLASSES];
-
 
 void freeClassArray(void)
 {
   int i;
 
-  for (i = 0; i < numberClasses; i++) {
+  for (i = 0; i < numberClasses; i++)
+  {
     free(classArray[i].className);
   }
 }
-
 
 ObjPtr lookupClass(char *className)
 {
   int i;
   char errorString[100];
 
-  for (i = 0; i < numberClasses; i++) {
-    if (strcmp(classArray[i].className, className) == 0) {
+  for (i = 0; i < numberClasses; i++)
+  {
+    if (strcmp(classArray[i].className, className) == 0)
+    {
       return classArray[i].classAssociation;
     }
   }
@@ -618,7 +608,6 @@ ObjPtr lookupClass(char *className)
   return machine.nil;
 }
 
-
 ObjPtr makeClassAssociation(char *className)
 {
   ObjPtr metaclass;
@@ -627,8 +616,8 @@ ObjPtr makeClassAssociation(char *className)
   ObjPtr key;
   ObjPtr symbols;
 
-  metaclass = allocateObject(machine.nil, SIZE_OF_METACLASS, TRUE);
-  clazz = allocateObject(metaclass, SIZE_OF_CLASS, TRUE);
+  metaclass   = allocateObject(machine.nil, SIZE_OF_METACLASS, TRUE);
+  clazz       = allocateObject(metaclass, SIZE_OF_CLASS, TRUE);
   association = allocateObject(machine.nil, SIZE_OF_ASSOCIATION, TRUE);
   setPointer(association, VALUE_IN_ASSOCIATION, clazz);
   key = allocateObject(machine.nil, strlen(className), FALSE);
@@ -636,38 +625,37 @@ ObjPtr makeClassAssociation(char *className)
   setPointer(association, KEY_IN_ASSOCIATION, key);
   symbols = allocateObject(machine.nil, SIZE_OF_LINKEDOBJECT, TRUE);
   setPointer(symbols, OBJECT_IN_LINKEDOBJECT, key);
-  setPointer(symbols,
-	     NEXTLINK_IN_LINKEDOBJECT,
-	     getPointer(machine.TheSymbols, VALUE_IN_ASSOCIATION));
+  setPointer(symbols, NEXTLINK_IN_LINKEDOBJECT,
+             getPointer(machine.TheSymbols, VALUE_IN_ASSOCIATION));
   setPointer(machine.TheSymbols, VALUE_IN_ASSOCIATION, symbols);
   return association;
 }
-
 
 void createClass(char **tokens)
 {
   ObjPtr association;
   ObjPtr *variable;
 
-  if (numberClasses == MAX_NUMBER_CLASSES) {
+  if (numberClasses == MAX_NUMBER_CLASSES)
+  {
     error("too many classes");
   }
-  classArray[numberClasses].className =
-    (char *) malloc(strlen(tokens[2]) + 1);
-  if (classArray[numberClasses].className == NULL) {
+  classArray[numberClasses].className = (char *)malloc(strlen(tokens[2]) + 1);
+  if (classArray[numberClasses].className == NULL)
+  {
     error("cannot allocate memory for class name");
   }
   strcpy(classArray[numberClasses].className, tokens[2]);
-  association = makeClassAssociation(tokens[2]);
+  association                                = makeClassAssociation(tokens[2]);
   classArray[numberClasses].classAssociation = association;
   variable = classNeededByInterpreter(tokens[2]);
-  if (variable != NULL) {
+  if (variable != NULL)
+  {
     /* class needed: store association in machine register */
     *variable = association;
   }
   numberClasses++;
 }
-
 
 void createClassesFrom(char *fileName)
 {
@@ -678,32 +666,41 @@ void createClassesFrom(char *fileName)
 
   printf("Creating classes from %s: ", fileName);
   sourceFile = fopen(fileName, "rt");
-  if (sourceFile == NULL) {
+  if (sourceFile == NULL)
+  {
     error("cannot open source file");
   }
-  while (1) {
+  while (1)
+  {
     c = getc(sourceFile);
-    if (c == EOF) {
+    if (c == EOF)
+    {
       break;
     }
-    if (c != '!') {
+    if (c != '!')
+    {
       ungetc(c, sourceFile);
       aString = nextChunk(sourceFile);
       /* Compiler evaluate: aString */
       tokens = analyzeClassCreationExpression(aString);
-      if (tokens == NULL) {
-	printf("\n%s\n", aString);
-	error("cannot understand");
+      if (tokens == NULL)
+      {
+        printf("\n%s\n", aString);
+        error("cannot understand");
       }
       printf("%s ", tokens[2]);
       createClass(tokens);
-    } else {
+    }
+    else
+    {
       aString = nextChunk(sourceFile);
-      while (1) {
-	aString = nextChunk(sourceFile);
-	if (*aString == '\0') {
-	  break;
-	}
+      while (1)
+      {
+        aString = nextChunk(sourceFile);
+        if (*aString == '\0')
+        {
+          break;
+        }
       }
     }
   }
@@ -711,14 +708,11 @@ void createClassesFrom(char *fileName)
   printf("\n");
 }
 
-
 /*------------------------------------*/
 /* File In                            */
 /*------------------------------------*/
 
-
-#define MAX_NUMBER_INSTVARS		20
-
+#define MAX_NUMBER_INSTVARS 20
 
 int fillInInstVarNames(ObjPtr clazz, char *nameString)
 {
@@ -728,50 +722,53 @@ int fillInInstVarNames(ObjPtr clazz, char *nameString)
   ObjPtr nameArray;
 
   numberNames = 0;
-  name = strtok(nameString, " \t\n");
-  while (name != NULL) {
-    if (numberNames == MAX_NUMBER_INSTVARS) {
+  name        = strtok(nameString, " \t\n");
+  while (name != NULL)
+  {
+    if (numberNames == MAX_NUMBER_INSTVARS)
+    {
       error("too many instance variables in class");
     }
     names[numberNames++] = name;
-    name = strtok(NULL, " \t\n");
+    name                 = strtok(NULL, " \t\n");
   }
   nameArray = newArray(numberNames);
-  for (i = 0; i < numberNames; i++) {
+  for (i = 0; i < numberNames; i++)
+  {
     setPointer(nameArray, i, newString(names[i]));
   }
   setPointer(clazz, INSTVARS_IN_CLASS, nameArray);
   return numberNames;
 }
 
-
-void fillInCharacteristic(ObjPtr clazz,
-			  char *creationKeyword,
-			  int totalNumberInstvars)
+void fillInCharacteristic(ObjPtr clazz, char *creationKeyword,
+                          int totalNumberInstvars)
 {
   Ulong characteristic;
 
   characteristic = totalNumberInstvars;
-  if (strcmp(creationKeyword, "subclass:") == 0) {
+  if (strcmp(creationKeyword, "subclass:") == 0)
+  {
     /* set HASPOINTERS flags */
     characteristic |= CLASSCHAR_HASPOINTERS;
-  } else
-  if (strcmp(creationKeyword, "variableSubclass:") == 0) {
+  }
+  else if (strcmp(creationKeyword, "variableSubclass:") == 0)
+  {
     /* set HASPOINTERS and ISINDEXABLE flags */
     characteristic |= CLASSCHAR_HASPOINTERS;
     characteristic |= CLASSCHAR_ISINDEXABLE;
-  } else
-  if (strcmp(creationKeyword, "variableBinarySubclass:") == 0) {
+  }
+  else if (strcmp(creationKeyword, "variableBinarySubclass:") == 0)
+  {
     /* set ISINDEXABLE flag */
     characteristic |= CLASSCHAR_ISINDEXABLE;
-  } else {
+  }
+  else
+  {
     error("illegal class creation keyword");
   }
-  setPointer(clazz,
-	     CHARACTERISTIC_IN_CLASS,
-	     newSmallInteger(characteristic));
+  setPointer(clazz, CHARACTERISTIC_IN_CLASS, newSmallInteger(characteristic));
 }
-
 
 void fillInClassData(char **tokens)
 {
@@ -786,22 +783,25 @@ void fillInClassData(char **tokens)
   /* get association for class with name in tokens[2] */
   association = lookupClass(tokens[2]);
   /* patch class of association object */
-  * (ObjPtr *) (memory + association) =
+  *(ObjPtr *)(memory + association) =
     getPointer(machine.Association, VALUE_IN_ASSOCIATION);
   /* get class */
   clazz = getPointer(association, VALUE_IN_ASSOCIATION);
   /* get metaclass */
   metaclass = getClass(clazz);
   /* patch class of metaclass object */
-  * (ObjPtr *) (memory + metaclass) =
+  *(ObjPtr *)(memory + metaclass) =
     getPointer(machine.Metaclass, VALUE_IN_ASSOCIATION);
   /* set name in class object */
   setPointer(clazz, NAME_IN_CLASS, newString(tokens[2]));
   /* set superclass in class object */
-  if (strcmp(tokens[0], "nil") == 0) {
+  if (strcmp(tokens[0], "nil") == 0)
+  {
     /* superclass of class is nil */
     superclass = machine.nil;
-  } else {
+  }
+  else
+  {
     /* superclass of class is not nil */
     superclass = getPointer(lookupClass(tokens[0]), VALUE_IN_ASSOCIATION);
   }
@@ -811,30 +811,34 @@ void fillInClassData(char **tokens)
   /* set instance variable names in class object */
   numberInstvars = fillInInstVarNames(clazz, tokens[3]);
   /* set characteristic in class object */
-  if (superclass == machine.nil) {
+  if (superclass == machine.nil)
+  {
     /* this is true only for class Object */
     numberSuperInstvars = 0;
-  } else {
+  }
+  else
+  {
     /* this is true for all classes except for class Object */
     numberSuperInstvars =
       smallIntegerValue(getPointer(superclass, CHARACTERISTIC_IN_CLASS)) &
       CLASSCHAR_NUMBERMASK;
   }
-  fillInCharacteristic(clazz,
-		       tokens[1],
-		       numberInstvars + numberSuperInstvars);
+  fillInCharacteristic(clazz, tokens[1], numberInstvars + numberSuperInstvars);
   /* set name in metaclass object */
   setPointer(metaclass, NAME_IN_METACLASS, newString(tokens[2]));
   /* set superclass in metaclass object */
-  if (superclass == machine.nil) {
+  if (superclass == machine.nil)
+  {
     /* superclass of class is nil:
        superclass of metaclass is Class */
     supermeta = getPointer(machine.Class, VALUE_IN_ASSOCIATION);
-  } else {
+  }
+  else
+  {
     /* superclass of class is not nil:
        superclass of metaclass is metaclass of superclass */
-    supermeta = getClass(getPointer(lookupClass(tokens[0]),
-				    VALUE_IN_ASSOCIATION));
+    supermeta =
+      getClass(getPointer(lookupClass(tokens[0]), VALUE_IN_ASSOCIATION));
   }
   setPointer(metaclass, SUPERCLASS_IN_METACLASS, supermeta);
   /* set method dictionary in metaclass object */
@@ -842,21 +846,21 @@ void fillInClassData(char **tokens)
   /* set instance variable names in metaclass object */
   numberInstvars = fillInInstVarNames(metaclass, "");
   /* set characteristic in metaclass object */
-  if (superclass == machine.nil) {
+  if (superclass == machine.nil)
+  {
     numberSuperInstvars = SIZE_OF_CLASS;
-  } else {
+  }
+  else
+  {
     numberSuperInstvars =
       smallIntegerValue(getPointer(supermeta, CHARACTERISTIC_IN_CLASS)) &
       CLASSCHAR_NUMBERMASK;
   }
   fillInCharacteristic(metaclass,
-		       "subclass:",
-		       numberInstvars + numberSuperInstvars);
+                       "subclass:", numberInstvars + numberSuperInstvars);
 }
 
-
 FILE *sourcesFile;
-
 
 void compileForClassInCategory(char *aString, ObjPtr aClass)
 {
@@ -871,63 +875,56 @@ void compileForClassInCategory(char *aString, ObjPtr aClass)
   offset = ftell(sourcesFile);
   fprintf(sourcesFile, "%s\n", aString);
   /* ATTENTION: do not compute the length according to
-	 length = ftell(sourcesFile) - offset;
+     length = ftell(sourcesFile) - offset;
      because this counts line breaks as 2 characters,
      even if the file is opened in text mode, i.e. it
      counts the bytes in the file, not in the string */
   length = strlen(aString) + 1;
-  setPointer(machine.compilerMethod,
-	     SOURCEOFFSET_IN_COMPILEDMETHOD,
-	     newSmallInteger(offset));
-  setPointer(machine.compilerMethod,
-	     SOURCELENGTH_IN_COMPILEDMETHOD,
-	     newSmallInteger(length));
+  setPointer(machine.compilerMethod, SOURCEOFFSET_IN_COMPILEDMETHOD,
+             newSmallInteger(offset));
+  setPointer(machine.compilerMethod, SOURCELENGTH_IN_COMPILEDMETHOD,
+             newSmallInteger(length));
   /* add the method to the method dictionary of the class */
   associations =
     allocateObject(getPointer(machine.LinkedObject, VALUE_IN_ASSOCIATION),
-		   SIZE_OF_LINKEDOBJECT,
-		   TRUE);
-  setPointer(associations,
-	     OBJECT_IN_LINKEDOBJECT,
-	     machine.compilerAssociation);
-  dictionary = getPointer(machine.compilerClass,
-			  METHODDICTIONARY_IN_CLASS);
-  setPointer(associations,
-	     NEXTLINK_IN_LINKEDOBJECT,
-	     getPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY));
-  setPointer(dictionary,
-	     ASSOCIATIONS_IN_DICTIONARY,
-	     associations);
+                   SIZE_OF_LINKEDOBJECT, TRUE);
+  setPointer(associations, OBJECT_IN_LINKEDOBJECT, machine.compilerAssociation);
+  dictionary = getPointer(machine.compilerClass, METHODDICTIONARY_IN_CLASS);
+  setPointer(associations, NEXTLINK_IN_LINKEDOBJECT,
+             getPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY));
+  setPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY, associations);
 }
-
 
 void fileInFrom(char **tokens, FILE *sourceFile)
 {
   char *aString;
 
-  while (1) {
+  while (1)
+  {
     aString = nextChunk(sourceFile);
-    if (*aString == '\0') {
+    if (*aString == '\0')
+    {
       break;
     }
-    if (tokens[1] == NULL) {
+    if (tokens[1] == NULL)
+    {
       /* Compiler compile: aString
-		  forClass: tokens[0]
-		  inCategory: tokens[2] */
-      compileForClassInCategory(aString,
-				getPointer(lookupClass(tokens[0]),
-					   VALUE_IN_ASSOCIATION));
-    } else {
+          forClass: tokens[0]
+          inCategory: tokens[2] */
+      compileForClassInCategory(
+        aString, getPointer(lookupClass(tokens[0]), VALUE_IN_ASSOCIATION));
+    }
+    else
+    {
       /* Compiler compile: aString
-		  forClass: tokens[0] class
-		  inCategory: tokens[2] */
-      compileForClassInCategory(aString,
-				getClass(getPointer(lookupClass(tokens[0]),
-						    VALUE_IN_ASSOCIATION)));
+          forClass: tokens[0] class
+          inCategory: tokens[2] */
+      compileForClassInCategory(
+        aString,
+        getClass(getPointer(lookupClass(tokens[0]), VALUE_IN_ASSOCIATION)));
     }
   }
 }
-
 
 void fileIn(char *fileName)
 {
@@ -938,32 +935,40 @@ void fileIn(char *fileName)
 
   printf("Filing-in %s: ", fileName);
   sourceFile = fopen(fileName, "rt");
-  if (sourceFile == NULL) {
+  if (sourceFile == NULL)
+  {
     error("cannot open source file");
   }
-  while (1) {
+  while (1)
+  {
     c = getc(sourceFile);
-    if (c == EOF) {
+    if (c == EOF)
+    {
       break;
     }
-    if (c != '!') {
+    if (c != '!')
+    {
       ungetc(c, sourceFile);
       aString = nextChunk(sourceFile);
       /* Compiler evaluate: aString */
       tokens = analyzeClassCreationExpression(aString);
-      if (tokens == NULL) {
-	printf("\n%s\n", aString);
-	error("cannot understand");
+      if (tokens == NULL)
+      {
+        printf("\n%s\n", aString);
+        error("cannot understand");
       }
       printf("%s ", tokens[2]);
       fillInClassData(tokens);
-    } else {
+    }
+    else
+    {
       aString = nextChunk(sourceFile);
       /* (Compiler evaluate: aString) fileInFrom: sourceFile */
       tokens = analyzeCategoryReaderExpression(aString);
-      if (tokens == NULL) {
-	printf("\n%s\n", aString);
-	error("cannot understand");
+      if (tokens == NULL)
+      {
+        printf("\n%s\n", aString);
+        error("cannot understand");
       }
       fileInFrom(tokens, sourceFile);
     }
@@ -972,11 +977,9 @@ void fileIn(char *fileName)
   printf("\n");
 }
 
-
 /*------------------------------------*/
 /* Global System Dictionary Creation  */
 /*------------------------------------*/
-
 
 void createGlobalSystemDictionary(void)
 {
@@ -987,73 +990,48 @@ void createGlobalSystemDictionary(void)
   /* create the global dictionary */
   machine.MiniTalk =
     allocateObject(getPointer(machine.Association, VALUE_IN_ASSOCIATION),
-		   SIZE_OF_ASSOCIATION,
-		   TRUE);
+                   SIZE_OF_ASSOCIATION, TRUE);
   dictionary =
     allocateObject(getPointer(machine.Dictionary, VALUE_IN_ASSOCIATION),
-		   SIZE_OF_DICTIONARY,
-		   TRUE);
-  setPointer(machine.MiniTalk,
-	     KEY_IN_ASSOCIATION,
-	     newSymbol("MiniTalk"));
-  setPointer(machine.MiniTalk,
-	     VALUE_IN_ASSOCIATION,
-	     dictionary);
+                   SIZE_OF_DICTIONARY, TRUE);
+  setPointer(machine.MiniTalk, KEY_IN_ASSOCIATION, newSymbol("MiniTalk"));
+  setPointer(machine.MiniTalk, VALUE_IN_ASSOCIATION, dictionary);
   /* it must contain itself */
   linkedObject =
     allocateObject(getPointer(machine.LinkedObject, VALUE_IN_ASSOCIATION),
-		   SIZE_OF_LINKEDOBJECT,
-		   TRUE);
-  setPointer(linkedObject,
-	     OBJECT_IN_LINKEDOBJECT,
-	     machine.MiniTalk);
-  setPointer(linkedObject,
-	     NEXTLINK_IN_LINKEDOBJECT,
-	     getPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY));
-  setPointer(dictionary,
-	     ASSOCIATIONS_IN_DICTIONARY,
-	     linkedObject);
+                   SIZE_OF_LINKEDOBJECT, TRUE);
+  setPointer(linkedObject, OBJECT_IN_LINKEDOBJECT, machine.MiniTalk);
+  setPointer(linkedObject, NEXTLINK_IN_LINKEDOBJECT,
+             getPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY));
+  setPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY, linkedObject);
   /* and the global symbol table */
   linkedObject =
     allocateObject(getPointer(machine.LinkedObject, VALUE_IN_ASSOCIATION),
-		   SIZE_OF_LINKEDOBJECT,
-		   TRUE);
-  setPointer(linkedObject,
-	     OBJECT_IN_LINKEDOBJECT,
-	     machine.TheSymbols);
-  setPointer(linkedObject,
-	     NEXTLINK_IN_LINKEDOBJECT,
-	     getPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY));
-  setPointer(dictionary,
-	     ASSOCIATIONS_IN_DICTIONARY,
-	     linkedObject);
+                   SIZE_OF_LINKEDOBJECT, TRUE);
+  setPointer(linkedObject, OBJECT_IN_LINKEDOBJECT, machine.TheSymbols);
+  setPointer(linkedObject, NEXTLINK_IN_LINKEDOBJECT,
+             getPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY));
+  setPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY, linkedObject);
   /* and all classes */
-  for (i = 0; i < numberClasses; i++) {
+  for (i = 0; i < numberClasses; i++)
+  {
     linkedObject =
       allocateObject(getPointer(machine.LinkedObject, VALUE_IN_ASSOCIATION),
-		     SIZE_OF_LINKEDOBJECT,
-		     TRUE);
-    setPointer(linkedObject,
-	       OBJECT_IN_LINKEDOBJECT,
-	       classArray[i].classAssociation);
-    setPointer(linkedObject,
-	       NEXTLINK_IN_LINKEDOBJECT,
-	       getPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY));
-    setPointer(dictionary,
-	       ASSOCIATIONS_IN_DICTIONARY,
-	       linkedObject);
+                     SIZE_OF_LINKEDOBJECT, TRUE);
+    setPointer(linkedObject, OBJECT_IN_LINKEDOBJECT,
+               classArray[i].classAssociation);
+    setPointer(linkedObject, NEXTLINK_IN_LINKEDOBJECT,
+               getPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY));
+    setPointer(dictionary, ASSOCIATIONS_IN_DICTIONARY, linkedObject);
   }
 }
-
 
 /*------------------------------------*/
 /* Initial Context Creation           */
 /*------------------------------------*/
 
-
-#define INITIAL_CLASS			"Driver"
-#define INITIAL_SELECTOR		"start"
-
+#define INITIAL_CLASS "Driver"
+#define INITIAL_SELECTOR "start"
 
 void createInitialContext(void)
 {
@@ -1089,69 +1067,45 @@ void createInitialContext(void)
    * INITIAL_CLASS and INITIAL_SELECTOR appropriately.
    */
   bytecodes = newByteArray("\x01\x80\x00\x06\xA0\x00\x00", 7);
-  literals = newArray(1);
+  literals  = newArray(1);
   setPointer(literals, 0, newSymbol(INITIAL_SELECTOR));
-  method = newCompiledMethod(newSymbol("boot"),
-			     machine.nil,
-			     newSmallInteger(0),
-			     newSmallInteger(0),
-			     newSmallInteger(1),
-			     bytecodes,
-			     literals);
+  method = newCompiledMethod(newSymbol("boot"), machine.nil, newSmallInteger(0),
+                             newSmallInteger(0), newSmallInteger(1), bytecodes,
+                             literals);
   temporaries = machine.nil;
-  stack = newArray(1);
-  context = newMethodContext(machine.nil,
-			     newSmallInteger(0),
-			     newSmallInteger(0),
-			     stack,
-			     getClass(getPointer(lookupClass(INITIAL_CLASS),
-						 VALUE_IN_ASSOCIATION)),
-			     method,
-			     getPointer(lookupClass(INITIAL_CLASS),
-					VALUE_IN_ASSOCIATION),
-			     temporaries);
-  machine.currentActiveContext =
-    context;
-  machine.currentHomeContext =
-    context;
-  machine.currentSender =
-    getPointer(context, SENDER_IN_METHODCONTEXT);
-  machine.currentCaller =
-    getPointer(context, CALLER_IN_BLOCKCONTEXT);
-  machine.currentClass =
-    getPointer(context, CLASS_IN_METHODCONTEXT);
-  machine.currentMethod =
-    getPointer(context, METHOD_IN_METHODCONTEXT);
-  machine.currentSelector =
-    getPointer(method, SELECTOR_IN_COMPILEDMETHOD);
-  machine.currentBytecodes =
-    getPointer(method, BYTECODES_IN_COMPILEDMETHOD);
-  machine.currentLiterals =
-    getPointer(method, LITERALS_IN_COMPILEDMETHOD);
-  machine.currentReceiver =
-    getPointer(context, RECEIVER_IN_METHODCONTEXT);
+  stack       = newArray(1);
+  context     = newMethodContext(
+    machine.nil, newSmallInteger(0), newSmallInteger(0), stack,
+    getClass(getPointer(lookupClass(INITIAL_CLASS), VALUE_IN_ASSOCIATION)),
+    method, getPointer(lookupClass(INITIAL_CLASS), VALUE_IN_ASSOCIATION),
+    temporaries);
+  machine.currentActiveContext = context;
+  machine.currentHomeContext   = context;
+  machine.currentSender        = getPointer(context, SENDER_IN_METHODCONTEXT);
+  machine.currentCaller        = getPointer(context, CALLER_IN_BLOCKCONTEXT);
+  machine.currentClass         = getPointer(context, CLASS_IN_METHODCONTEXT);
+  machine.currentMethod        = getPointer(context, METHOD_IN_METHODCONTEXT);
+  machine.currentSelector      = getPointer(method, SELECTOR_IN_COMPILEDMETHOD);
+  machine.currentBytecodes = getPointer(method, BYTECODES_IN_COMPILEDMETHOD);
+  machine.currentLiterals  = getPointer(method, LITERALS_IN_COMPILEDMETHOD);
+  machine.currentReceiver  = getPointer(context, RECEIVER_IN_METHODCONTEXT);
   machine.currentTemporaries =
     getPointer(context, TEMPORARIES_IN_METHODCONTEXT);
-  machine.currentStack =
-    getPointer(context, STACK_IN_METHODCONTEXT);
-  machine.ip =
-    smallIntegerValue(getPointer(context, INSTPTR_IN_METHODCONTEXT));
+  machine.currentStack = getPointer(context, STACK_IN_METHODCONTEXT);
+  machine.ip = smallIntegerValue(getPointer(context, INSTPTR_IN_METHODCONTEXT));
   machine.sp =
     smallIntegerValue(getPointer(context, STACKPTR_IN_METHODCONTEXT));
 }
 
-
 /*------------------------------------*/
 /* Main Program                       */
 /*------------------------------------*/
-
 
 void usage(void)
 {
   printf("\nUsage: mkimage [-dm] [-ds] [-dp] [-dt] [file]\n");
   exit(1);
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -1167,48 +1121,67 @@ int main(int argc, char *argv[])
 
   /* analyze command line arguments */
   fileName = NULL;
-  for (i = 1; i < argc; i++) {
+  for (i = 1; i < argc; i++)
+  {
     argp = argv[i];
-    if (*argp == '-') {
+    if (*argp == '-')
+    {
       /* option */
       argp++;
-      if (strcmp(argp, "dm") == 0) {
-	debugMemory = TRUE;
-      } else
-      if (strcmp(argp, "ds") == 0) {
-	debugScanner = TRUE;
-      } else
-      if (strcmp(argp, "dp") == 0) {
-	debugParser = TRUE;
-      } else
-      if (strcmp(argp, "dt") == 0) {
-	debugTree = TRUE;
-      } else {
-	usage();
+      if (strcmp(argp, "dm") == 0)
+      {
+        debugMemory = TRUE;
       }
-    } else {
+      else if (strcmp(argp, "ds") == 0)
+      {
+        debugScanner = TRUE;
+      }
+      else if (strcmp(argp, "dp") == 0)
+      {
+        debugParser = TRUE;
+      }
+      else if (strcmp(argp, "dt") == 0)
+      {
+        debugTree = TRUE;
+      }
+      else
+      {
+        usage();
+      }
+    }
+    else
+    {
       /* file */
-      if (fileName == NULL) {
-	fileName = argp;
-      } else {
-	usage();
+      if (fileName == NULL)
+      {
+        fileName = argp;
+      }
+      else
+      {
+        usage();
       }
     }
   }
   /* set image and sources file names */
-  if (fileName == NULL) {
+  if (fileName == NULL)
+  {
     strcpy(imageFileName, ORIGINAL_NAME);
     strcpy(sourcesFileName, ORIGINAL_NAME);
-  } else {
+  }
+  else
+  {
     strcpy(imageFileName, fileName);
     strcpy(sourcesFileName, fileName);
   }
-  if (strchr(imageFileName, '.') == NULL) {
+  if (strchr(imageFileName, '.') == NULL)
+  {
     strcat(imageFileName, ".");
     strcat(imageFileName, DEFAULT_IMAGE_EXT);
     strcat(sourcesFileName, ".");
     strcat(sourcesFileName, DEFAULT_SOURCE_EXT);
-  } else {
+  }
+  else
+  {
     error("file name must not contain extension");
   }
   /* write greeting */
@@ -1218,7 +1191,7 @@ int main(int argc, char *argv[])
   /* init object memory */
 #ifdef DOS_STANDARD
   nearCoreBefore = coreleft();
-  farCoreBefore = farcoreleft();
+  farCoreBefore  = farcoreleft();
 #endif
   initMemory(imageFileName);
   /* create the world */
@@ -1233,7 +1206,8 @@ int main(int argc, char *argv[])
   createGlobalSystemDictionary();
   /* file-in the standard library classes */
   sourcesFile = fopen(sourcesFileName, "wt");
-  if (sourcesFile == NULL) {
+  if (sourcesFile == NULL)
+  {
     error("cannot open sources file");
   }
   forEachStdClassDo(fileIn);
@@ -1245,12 +1219,14 @@ int main(int argc, char *argv[])
   freeClassArray();
 #ifdef DOS_STANDARD
   nearCoreAfter = coreleft();
-  farCoreAfter = farcoreleft();
-  if (nearCoreBefore != nearCoreAfter) {
+  farCoreAfter  = farcoreleft();
+  if (nearCoreBefore != nearCoreAfter)
+  {
     printf("near core: %lu vs. %lu", nearCoreBefore, nearCoreAfter);
     error("memory leakage");
   }
-  if (farCoreBefore != farCoreAfter) {
+  if (farCoreBefore != farCoreAfter)
+  {
     printf("far core: %lu vs. %lu", farCoreBefore, farCoreAfter);
     error("memory leakage");
   }

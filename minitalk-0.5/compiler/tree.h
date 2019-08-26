@@ -2,110 +2,122 @@
  * tree.h -- abstract syntax tree
  */
 
-
 #ifndef _TREE_H_
 #define _TREE_H_
 
+#define V_SELF 0
+#define V_SUPER 1
+#define V_NIL 2
+#define V_FALSE 3
+#define V_TRUE 4
+#define V_INSTANCE 5
+#define V_ARGUMENT 6
+#define V_TEMPORARY 7
+#define V_SHARED 8
 
-#define V_SELF			0
-#define V_SUPER			1
-#define V_NIL			2
-#define V_FALSE			3
-#define V_TRUE			4
-#define V_INSTANCE		5
-#define V_ARGUMENT		6
-#define V_TEMPORARY		7
-#define V_SHARED		8
-
-typedef struct variable {
+typedef struct variable
+{
   struct variable *next;
   int type;
   char *name;
   int offset;
 } Variable;
 
-
-typedef struct list {
+typedef struct list
+{
   struct node *head;
   struct list *tail;
 } List;
 
+#define N_SYMBOL 0
+#define N_INTNUM 1
+#define N_FLONUM 2
+#define N_STRING 3
+#define N_CHARCON 4
+#define N_ARRAY 5
+#define N_VARIABLE 6
+#define N_BLOCK 7
+#define N_MESSAGE 8
+#define N_CASCADE 9
+#define N_ASSIGN 10
+#define N_RETEXP 11
+#define N_METHOD 12
 
-#define N_SYMBOL		0
-#define N_INTNUM		1
-#define N_FLONUM		2
-#define N_STRING		3
-#define N_CHARCON		4
-#define N_ARRAY			5
-#define N_VARIABLE		6
-#define N_BLOCK			7
-#define N_MESSAGE		8
-#define N_CASCADE		9
-#define N_ASSIGN		10
-#define N_RETEXP		11
-#define N_METHOD		12
-
-typedef struct node {
+typedef struct node
+{
   int type;
   union {
     /* N_SYMBOL */
-    struct {
+    struct
+    {
       char *name;
     } symbol;
     /* N_INTNUM */
-    struct {
+    struct
+    {
       long value;
     } intnum;
     /* N_FLONUM */
-    struct {
+    struct
+    {
       double value;
     } flonum;
     /* N_STRING */
-    struct {
+    struct
+    {
       char *value;
     } string;
     /* N_CHARCON */
-    struct {
+    struct
+    {
       char value;
     } charcon;
     /* N_ARRAY */
-    struct {
+    struct
+    {
       List *elements;
       int numberElements;
     } array;
     /* N_VARIABLE */
-    struct {
+    struct
+    {
       Variable *record;
     } variable;
     /* N_BLOCK */
-    struct {
+    struct
+    {
       List *variables;
       int numberVariables;
       List *statements;
     } block;
     /* N_MESSAGE */
-    struct {
+    struct
+    {
       struct node *receiver;
       Bool superFlag;
       struct node *selector;
       List *arguments;
     } message;
     /* N_CASCADE */
-    struct {
+    struct
+    {
       struct node *receiver;
       List *messages;
     } cascade;
     /* N_ASSIGN */
-    struct {
+    struct
+    {
       List *variables;
       struct node *expression;
     } assign;
     /* N_RETEXP */
-    struct {
+    struct
+    {
       struct node *expression;
     } retexp;
     /* N_METHOD */
-    struct {
+    struct
+    {
       struct node *selector;
       int numberArguments;
       int numberTemporaries;
@@ -114,7 +126,6 @@ typedef struct node {
     } method;
   } u;
 } Node;
-
 
 char *copyString(char *string);
 char *appendString(char *alreadyThere, char *toBeAppended);
@@ -132,6 +143,5 @@ Node *newNode(int type);
 List *appendElement(List *list, Node *element);
 void showTree(Node *tree);
 void freeTree(Node *tree);
-
 
 #endif /* _TREE_H_ */

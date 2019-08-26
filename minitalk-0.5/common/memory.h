@@ -2,13 +2,10 @@
  * memory.c -- object memory
  */
 
-
 #ifndef _MEMORY_H_
 #define _MEMORY_H_
 
-
 extern Bool debugMemory;
-
 
 ObjPtr allocateObject(ObjPtr class, Word size, Bool hasPointers);
 
@@ -35,6 +32,5 @@ void swapPointers(ObjPtr obj1, ObjPtr obj2);
 
 void initMemory(char *imageFileName);
 void exitMemory(char *imageFileName);
-
 
 #endif /* _MEMORY_H_ */

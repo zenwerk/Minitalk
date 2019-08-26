@@ -2,25 +2,23 @@
  * machine.h -- virtual machine state data
  */
 
-
 #ifndef _MACHINE_H_
 #define _MACHINE_H_
 
+#define SIGNATURE_1 0x37A2F90B
+#define SIGNATURE_2 0x1E84C56D
 
-#define SIGNATURE_1	0x37A2F90B
-#define SIGNATURE_2	0x1E84C56D
-
-
-typedef struct {
+typedef struct
+{
   /* image file signature */
-  Word signature_1;		/* must be SIGNATURE_1 */
-  Word signature_2;		/* must be SIGNATURE_2 */
+  Word signature_1; /* must be SIGNATURE_1 */
+  Word signature_2; /* must be SIGNATURE_2 */
   /* image file version number */
-  int majorVersion;		/* same as main program's major version */
-  int minorVersion;		/* main's minor version, is not checked */
+  int majorVersion; /* same as main program's major version */
+  int minorVersion; /* main's minor version, is not checked */
   /* image file structure */
-  long memoryStart;		/* byte offset of object memory in file */
-  long memorySize;		/* total size of object memory in bytes */
+  long memoryStart; /* byte offset of object memory in file */
+  long memorySize;  /* total size of object memory in bytes */
   /* known objects */
   ObjPtr nil;
   ObjPtr false;
@@ -74,8 +72,6 @@ typedef struct {
   ObjPtr compilerAssociation;
 } Machine;
 
-
-extern Machine machine;		/* an instance of the virtual machine */
-
+extern Machine machine; /* an instance of the virtual machine */
 
 #endif /* _MACHINE_H_ */
